@@ -38,16 +38,15 @@ setup_virtualization_tools() {
 }
 
 setup_desktop_environment() {
-    echo "Starting installation of desktop environment..."
-    sudo dnf install labwc \
+    echo "Starting installation of desktop environment..." # I have installed sway, waybar, firefox and sddm, and gtk-murrine-engine
+    sudo dnf install sway \
+    sfwbar \
     waybar \
+    gtk-murrine-engine \
     rofi-wayland \
-    swaybg \
     network-manager-applet \
     nm-connection-editor \
-    alacritty \
     firefox \
-    xorg-x11-server-Xwayland \
     sddm -y
     if [ $? -ne 0 ]; then
         echo "Installation of desktop packages failed"
@@ -65,11 +64,17 @@ setup_desktop_environment() {
         echo "Setting default target to graphical failed."
         exit 1
     fi
-    
-    sudo cp ./labwc.desktop /usr/share/wayland-sessions/
+
+    mkdir -p ~/.config/sway
     if [ $? -ne 0 ]; then
-        echo "Copying labwc.desktop failed."
-        exit 1
+       echo "Making ~/.config/sway failed"
+       exit 1
+    fi
+
+    cp /etc/sway/config ~/.config/sway/
+    if [ $? -ne 0 ]; then
+       echo "Copying config failed"
+       exit 1
     fi
 
     echo "Desktop environment installed successfully."
@@ -77,4 +82,4 @@ setup_desktop_environment() {
 
 update_system
 setup_virtualization_tools
-setup_desktop_environment
+#setup_desktop_environment
