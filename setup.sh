@@ -38,13 +38,14 @@ setup_virtualization_tools() {
 }
 
 setup_desktop_environment() {
-    echo "Starting installation of desktop environment..." # I have installed sway, waybar, firefox and sddm, and gtk-murrine-engine
+    echo "Starting installation of desktop environment..." # I have installed sway, waybar, firefox and sddm, and gtk-murrine-engine rofi-wayland
     sudo dnf install sway \
-    sfwbar \
     waybar \
+    pavuconrol \
     gtk-murrine-engine \
-    rofi-wayland \
+    wofi \
     network-manager-applet \
+    NetworkManager-tui \
     nm-connection-editor \
     firefox \
     sddm -y
@@ -74,6 +75,58 @@ setup_desktop_environment() {
     cp /etc/sway/config ~/.config/sway/
     if [ $? -ne 0 ]; then
        echo "Copying config failed"
+       exit 1
+    fi
+
+    cp -r /etc/xdg/waybar ~/.config/waybar
+    if [ $? -ne 0 ]; then
+       echo "Copying waybar config failed"
+       exit 1
+    fi
+
+    if [ ! -d "/home/$TARGET_USER/.themes" ]; then
+        mkdir -p "/home/$TARGET_USER/.themes"
+    fi
+
+    cp -r ./.themes/Gruvbox-B-MB-Dark "/home/$TARGET_USER/.themes/Gruvbox-B-MB-Dark"
+    if [ $? -ne 0 ]; then
+       echo "Copying theme failed"
+       exit 1
+    fi
+
+    if [ ! -d "/home/$TARGET_USER/.config/gtk-3.0" ]; then
+        mkdir -p "/home/$TARGET_USER/.config/gtk-3.0"
+    fi
+
+    if [ ! -d "/home/$TARGET_USER/.config/gtk-4.0" ]; then
+        mkdir -p "/home/$TARGET_USER/.config/gtk-4.0"
+    fi
+
+    if [ ! -d "/home/$TARGET_USER/.config/sway" ]; then
+        mkdir -p "/home/$TARGET_USER/.config/sway"
+    fi
+
+    cp ./gtkrc-2.0 "/home/$TARGET_USER/.gtkrc-2.0"
+    if [ $? -ne 0 ]; then
+       echo "Copying gtk-2.0 settings failed"
+       exit 1
+    fi
+
+    cp ./.config/settings.ini "/home/$TARGET_USER/.config/gtk-3.0/"
+    if [ $? -ne 0 ]; then
+       echo "Copying gtk-3.0 settings failed"
+       exit 1
+    fi
+
+    cp ./ConfigFiles/gtk-4.0settings.ini "/home/$TARGET_USER/.config/gtk-4.0/"
+    if [ $? -ne 0 ]; then
+       echo "Copying gtk-4.0 settings failed"
+       exit 1
+    fi
+
+    cp ./.config/sway "/home/$TARGET_USER/.config/sway/config"
+    if [ $? -ne 0 ]; then
+       echo "Copying sway config settings failed"
        exit 1
     fi
 
