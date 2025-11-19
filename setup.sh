@@ -13,6 +13,35 @@ update_system() {
     echo "System update completed successfully."
 }
 
+setup_snapshots() {
+    echo "Setting up automatic snapshots..."
+    sudo dnf install snapper python3-dnf-plugin-snapper -y
+    if [ $? -ne 0 ]; then
+        echo "Installation of snapper failed."
+        exit 1
+    fi
+
+    sudo snapper -c root create-config /
+    if [ $? -ne 0 ]; then
+        echo "Creating snapper config failed."
+        exit 1
+    fi
+
+    sudo systemctl enable --now snapper-timeline.timer
+    if [ $? -ne 0 ]; then
+        echo "Enabling snapper timeline timer failed."
+        exit 1
+    fi
+
+    sudo systemctl enable --now snapper-cleanup.timer
+    if [ $? -ne 0 ]; then
+        echo "Enabling snapper cleanup timer failed."
+        exit 1
+    fi
+
+    echo "Automatic snapshots setup completed successfully."
+}
+
 setup_virtualization_tools() {
     echo "Starting installation of virtualization tools..."
     sudo dnf group install --with-optional "virtualization" -y
@@ -91,5 +120,6 @@ setup_desktop_environment() {
 }
 
 update_system
+setup_snapshots
 setup_virtualization_tools
 setup_desktop_environment
