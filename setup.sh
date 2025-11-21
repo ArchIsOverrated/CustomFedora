@@ -18,6 +18,13 @@ setup_snapshots() {
 
     sudo snapper -c root create-config /
 
+    if findmnt -n /home | grep -q "btrfs"; then
+        echo "Creating Snapper config for /home ..."
+        sudo snapper -c home create-config /home
+    else
+        echo "WARNING: /home is not on Btrfs or not a subvolume. Skipping home Snapper config."
+    fi
+
     sudo systemctl enable --now snapper-timeline.timer
 
     sudo systemctl enable --now snapper-cleanup.timer
