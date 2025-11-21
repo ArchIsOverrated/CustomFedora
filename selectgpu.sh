@@ -36,5 +36,5 @@ select_gpu() {
 
 # Example usage:
 select_gpu
-# echo "Selected IDs: $GPU_IDS"
+echo "Selected IDs: $GPU_IDS"
 
