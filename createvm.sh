@@ -47,10 +47,30 @@ select_iso_path() {
         echo "ISO file not found at $ISO_PATH. Exiting."
         exit 1
     fi
+
+    REAL_USER="${SUDO_USER:-$USER}"
+
+    USER_HOME=$(getent passwd "$REAL_USER" | awk -F: '{print $6}')
+
+    if [[ -n "$USER_HOME" && "$ISO_PATH" == "$USER_HOME/"* ]]; then
+        HOME_PERMS=$(stat -c '%A' "$USER_HOME")
+
+        GROUP_PERMS=${HOME_PERMS:4:3}
+
+        if [[ "$GROUP_PERMS" != *x* ]]; then
+            echo
+            echo "The ISO is inside $USER_HOME."
+            echo "QEMU needs group 'execute' permission on this directory to reach the ISO."
+            echo "Fixing it by running:"
+            echo "  chmod g+x \"$USER_HOME\""
+            echo
+            chmod +x "$USER_HOME"
+        fi
+    fi
 }
 
 select_disk_size() {
-    read -r -p "Enter disk size for VM (e.g., 40G): " DISK_SIZE
+    read -r -p "Enter disk size for VM (e.g., 40, but assume in GiB): " DISK_SIZE
     if [[ -z "$DISK_SIZE" ]]; then
         echo "Disk size cannot be empty. Exiting."
         exit 1
