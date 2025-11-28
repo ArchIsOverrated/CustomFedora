@@ -62,6 +62,7 @@ configure_looking-glass() {
   echo "# Type Path               Mode UID  GID Age Argument" > /etc/tmpfiles.d/10-looking-glass.conf
   echo "f /dev/shm/looking-glass 0660 $TARGET_USER qemu -" >> /etc/tmpfiles.d/10-looking-glass.conf
   echo "Looking Glass installation completed."
+  sudo semanage fcontext -a -t svirt_tmpfs_t /dev/shm/looking-glass
 }
 
 setup_looking-glass() {

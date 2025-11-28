@@ -98,3 +98,4 @@ setup_snapshots
 setup_virtualization_tools
 setup_desktop_environment
 echo "Setup completed successfully."
+echo "Please reboot your system to apply all changes."
