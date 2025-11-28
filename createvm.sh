@@ -85,6 +85,14 @@ select_ram_size() {
     fi
 }
 
+select_cpu_count() {
+    read -r -p "Enter number of CPU cores for the VM (e.g., 4): " CPU_COUNT
+    if [[ -z "$CPU_COUNT" ]]; then
+        echo "CPU count cannot be empty. Exiting."
+        exit 1
+    fi
+}
+
 create_vm() {
     echo "Creating VM '$VM_NAME'..."
 
@@ -92,6 +100,7 @@ create_vm() {
         virt-install \
             --name "$VM_NAME" \
             --ram "$RAM_SIZE" \
+            --vcpus "$CPU_COUNT" \
             --disk size="$DISK_SIZE",format=qcow2 \
             --cdrom "$ISO_PATH" \
             --os-variant "$OS_VARIANT" \
@@ -100,6 +109,7 @@ create_vm() {
         virt-install \
             --name "$VM_NAME" \
             --ram "$RAM_SIZE" \
+            --vcpus "$CPU_COUNT" \
             --disk size="$DISK_SIZE",format=qcow2 \
             --cdrom "$ISO_PATH" \
             --noautoconsole
@@ -113,4 +123,6 @@ select_vm_name
 select_iso_path
 select_disk_size
 select_ram_size
+select_cpu_count
 create_vm
+
