@@ -9,6 +9,7 @@ fi
 
 trap 'echo "Error on line $LINENO while running: $BASH_COMMAND" >&2' ERR
 
+TARGET_USER="${SUDO_USER:-$USER}"
 
 build_looking-glass() {
   echo "Starting installation of Looking Glass..."
@@ -56,7 +57,16 @@ build_looking-glass() {
     make
 }
 
+configure_looking-glass() {
+  echo "Configuring Looking Glass..."
+  echo "# Type Path               Mode UID  GID Age Argument" > /etc/tmpfiles.d/10-looking-glass.conf
+  echo "f /dev/shm/looking-glass 0660 $TARGET_USER qemu -" >> /etc/tmpfiles.d/10-looking-glass.conf
+  echo "Looking Glass installation completed."
+}
+
 setup_looking-glass() {
   build_looking-glass
+  configure_looking-glass
 }
 setup_looking-glass
+configure_looking-glass
