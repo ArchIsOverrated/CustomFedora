@@ -71,4 +71,3 @@ setup_looking-glass() {
   configure_looking-glass
 }
 setup_looking-glass
-configure_looking-glass
