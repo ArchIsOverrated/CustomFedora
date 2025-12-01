@@ -22,25 +22,46 @@ setup_snapshots() {
 
   dnf install snapper python3-dnf-plugin-snapper -y
 
-  snapper -c root create-config /
-
-  if findmnt -n /home | grep -q "btrfs"; then
-    echo "Creating Snapper config for /home ..."
-    snapper -c home create-config /home
+  # Root Snapper config
+  if [ ! -f /etc/snapper/configs/root ]; then
+    echo "Creating Snapper config for / ..."
+    snapper -c root create-config /
   else
-    echo "WARNING: /home is not on Btrfs or not a subvolume. Skipping home Snapper config."
+    echo "Snapper root config already exists."
   fi
 
-  if findmnt -n /var/lib/libvirt/images | grep -q "btrfs"; then
-    echo "Creating Snapper config for /var/lib/libvirt/images ..."
-    snapper -c libvirt-images create-config /var/lib/libvirt/images
-
-    echo "Disabling COW on /var/lib/libvirt/images ..."
-    if ! chattr +C /var/lib/libvirt/images; then
-      echo "WARNING: Failed to disable COW on /var/lib/libvirt/images"
+  # Home Snapper config (only works on Btrfs)
+  if findmnt -n /home | grep -q "btrfs"; then
+    if [ ! -f /etc/snapper/configs/home ]; then
+      echo "Creating Snapper config for /home ..."
+      snapper -c home create-config /home
+    else
+      echo "Snapper home config already exists."
     fi
   else
-    echo "WARNING: /var/lib/libvirt/images is missing or not on Btrfs. Skipping libvirt Snapper config."
+    echo "WARNING: /home is not on Btrfs. Skipping home Snapper config."
+  fi
+
+  # libvirt images Snapper config (ONLY when on Btrfs)
+  if findmnt -n /var/lib/libvirt/images | grep -q "btrfs"; then
+    if [ ! -f /etc/snapper/configs/libvirt-images ]; then
+      echo "Creating Snapper config for /var/lib/libvirt/images ..."
+      snapper -c libvirt-images create-config /var/lib/libvirt/images
+    else
+      echo "Snapper libvirt-images config already exists."
+    fi
+  else
+    echo "NOTICE: /var/lib/libvirt/images is not on Btrfs. Snapper will not be used for it."
+  fi
+
+  # Always attempt COW disable – safe on both Btrfs and XFS
+  if [ -d /var/lib/libvirt/images ]; then
+    echo "Disabling COW on /var/lib/libvirt/images ..."
+    if ! chattr +C /var/lib/libvirt/images; then
+      echo "INFO: Could not disable COW (expected if filesystem is XFS or ext4)"
+    fi
+  else
+    echo "WARNING: /var/lib/libvirt/images does not exist."
   fi
 
   systemctl enable --now snapper-timeline.timer
@@ -48,7 +69,6 @@ setup_snapshots() {
 
   echo "Automatic snapshots setup completed successfully."
 }
-
 
 setup_virtualization_tools() {
   echo "Starting installation of virtualization tools..."
