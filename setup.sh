@@ -36,7 +36,9 @@ setup_snapshots() {
     snapper -c libvirt-images create-config /var/lib/libvirt/images
 
     echo "Disabling COW on /var/lib/libvirt/images ..."
-    chattr +C /var/lib/libvirt/images || echo "WARNING: Failed to disable COW on /var/lib/libvirt/images"
+    if ! chattr +C /var/lib/libvirt/images; then
+      echo "WARNING: Failed to disable COW on /var/lib/libvirt/images"
+    fi
   else
     echo "WARNING: /var/lib/libvirt/images is missing or not on Btrfs. Skipping libvirt Snapper config."
   fi
