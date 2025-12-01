@@ -91,6 +91,10 @@ setup_looking-glass() {
     echo "ERROR: install_looking-glass.sh not found."
     exit 1
   fi
+
+  echo "Running Looking Glass installer..."
+  bash ./install_looking-glass.sh
+  echo "Looking Glass installation completed."
 }
 
 setup_desktop_environment() {
