@@ -70,6 +70,7 @@ setup_desktop_environment() {
   NetworkManager-tui \
   nm-connection-editor \
   firefox \
+  curl \
   sddm -y
 
   systemctl enable sddm
