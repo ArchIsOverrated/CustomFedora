@@ -93,7 +93,7 @@ setup_looking-glass() {
   fi
 
   echo "Running Looking Glass installer..."
-  bash ./install_looking-glass.sh
+  ./install_looking-glass.sh
   echo "Looking Glass installation completed."
 }
 
