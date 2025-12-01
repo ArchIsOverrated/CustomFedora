@@ -31,12 +31,22 @@ setup_snapshots() {
     echo "WARNING: /home is not on Btrfs or not a subvolume. Skipping home Snapper config."
   fi
 
-  systemctl enable --now snapper-timeline.timer
+  if findmnt -n /var/lib/libvirt/images | grep -q "btrfs"; then
+    echo "Creating Snapper config for /var/lib/libvirt/images ..."
+    snapper -c libvirt-images create-config /var/lib/libvirt/images
 
+    echo "Disabling COW on /var/lib/libvirt/images ..."
+    chattr +C /var/lib/libvirt/images || echo "WARNING: Failed to disable COW on /var/lib/libvirt/images"
+  else
+    echo "WARNING: /var/lib/libvirt/images is missing or not on Btrfs. Skipping libvirt Snapper config."
+  fi
+
+  systemctl enable --now snapper-timeline.timer
   systemctl enable --now snapper-cleanup.timer
 
   echo "Automatic snapshots setup completed successfully."
 }
+
 
 setup_virtualization_tools() {
   echo "Starting installation of virtualization tools..."
