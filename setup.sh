@@ -75,6 +75,10 @@ setup_virtualization_tools() {
 
   dnf group install --with-optional "virtualization" -y
 
+  dnf install tuned
+  systemctl enable --now tuned
+  tuned-adm profile virtual-host
+
   echo "Virtualization tools installed successfully."
 
   systemctl enable --now libvirtd
