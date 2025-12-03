@@ -118,6 +118,19 @@ create_vm() {
   echo "VM '$VM_NAME' created. It should now be visible in virt-manager."
 }
 
+configure_vm() {
+  if [ ! -f ./configure_vm.sh ]; then
+    echo "ERROR: configure_vm.sh not found."
+    exit 1
+  fi
+
+  echo "Running Looking Glass installer..."
+  ./configure_vm.sh
+  echo "Looking Glass installation completed."
+
+  ./configure_vm.sh "$VM_NAME"
+}
+
 select_os_variant
 select_vm_name
 select_iso_path
@@ -125,4 +138,5 @@ select_disk_size
 select_ram_size
 select_cpu_count
 create_vm
+configure_vm
 
