@@ -22,7 +22,7 @@ fi
 
 # After VM stops -> remove hugepages
 if [ "$EVENT" = "stopped" ] && [ "$PHASE" = "end" ]; then
-    if [ -x "$VM_DIR/removepages.sh" ]; then
-        "$VM_DIR/removepages.sh" "$@"
+    if [ -x "$VM_DIR/releasepages.sh" ]; then
+        "$VM_DIR/releasepages.sh" "$@"
     fi
 fi

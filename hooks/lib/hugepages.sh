@@ -58,7 +58,7 @@ elif [ "$PROG_NAME" = "releasepages.sh" ]; then
 fi
 
 attempts=0
-while [ attempts -lt 1000 ] && [ "$ALLOCATED_HUGEPAGES" -ne "$TARGET_HUGEPAGES" ]; do
+while [ "$attempts" -lt 1000 ] && [ "$ALLOCATED_HUGEPAGES" -ne "$TARGET_HUGEPAGES" ]; do
   echo 1 > /proc/sys/vm/compact_memory
   echo "$TARGET_HUGEPAGES" > "$HUGEPAGES_SYS_FILE"
   ALLOCATED_HUGEPAGES=$(cat "$HUGEPAGES_SYS_FILE")
