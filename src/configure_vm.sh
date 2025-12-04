@@ -27,8 +27,6 @@ configure_hooks() {
 
   if [ ! -d $VM_DIR ]; then
     mkdir -p "$VM_DIR"
-    ln -s "$LIB_DIR/hugepages.sh" "$VM_DIR/allocpages.sh"
-    ln -s "$LIB_DIR/hugepages.sh" "$VM_DIR/releasepages.sh"
   fi
 }
 
