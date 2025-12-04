@@ -7,6 +7,7 @@ EVENT="$2"      # start, stopped, etc.
 PHASE="$3"      # begin, end, etc.
 
 VM_DIR="$HOOKS_DIR/qemu.d/$VM_NAME"
+LIB_DIR="$HOOKS_DIR/lib"
 
 # If there is no per-VM directory, do nothing
 if [ ! -d "$VM_DIR" ]; then
@@ -14,15 +15,15 @@ if [ ! -d "$VM_DIR" ]; then
 fi
 
 # Before VM starts -> allocate hugepages
-if [ "$EVENT" = "start" ] && [ "$PHASE" = "begin" ]; then
-    if [ -x "$VM_DIR/allocpages.sh" ]; then
-        "$VM_DIR/allocpages.sh" "$@"
+if [ "$EVENT" = "prepare" ] && [ "$PHASE" = "begin" ]; then
+    if [ -x "$LIB_DIR/hugepages.sh" ]; then
+        "$LIB_DIR/hugepages.sh" "$VM_NAME" "allocate"
     fi
 fi
 
 # After VM stops -> remove hugepages
-if [ "$EVENT" = "stopped" ] && [ "$PHASE" = "end" ]; then
-    if [ -x "$VM_DIR/releasepages.sh" ]; then
-        "$VM_DIR/releasepages.sh" "$@"
+if [ "$EVENT" = "release" ] && [ "$PHASE" = "end" ]; then
+    if [ -x "$LIB_DIR/hugepages.sh" ]; then
+        "$LIB_DIR/hugepages.sh" "$VM_NAME" "release"
     fi
 fi
