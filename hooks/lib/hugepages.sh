@@ -1,8 +1,7 @@
 #!/bin/bash
 
-PROG_NAME=$(basename "$0")
-
 VM_NAME="$1"
+ACTION="$2"
 
 if [ -z "$VM_NAME" ]; then
   echo "No VM Name"
@@ -51,10 +50,10 @@ CURRENT_HUGEPAGES=$(cat "$HUGEPAGES_SYS_FILE")
 TARGET_HUGEPAGES=0
 ALLOCATED_HUGEPAGES=$(cat "$HUGEPAGES_SYS_FILE")
 
-if [ "$PROG_NAME" = "allocpages.sh" ]; then
+if [ "$ACTION" = "allocate" ]; then
   TARGET_HUGEPAGES=$((CURRENT_HUGEPAGES+HUGEPAGES))
-elif [ "$PROG_NAME" = "releasepages.sh" ]; then
-  TARGET_HUGEPAGES=$(( CURRENT_HUGEPAGES-HUGEPAGES ))
+elif [ "$ACTION" = "release" ]; then
+  TARGET_HUGEPAGES=$((CURRENT_HUGEPAGES-HUGEPAGES))
 fi
 
 attempts=0
