@@ -21,9 +21,23 @@ if [ "$EVENT" = "prepare" ] && [ "$PHASE" = "begin" ]; then
     fi
 fi
 
+#Before VM starts isolate the cpus
+if [ "$EVENT" = "prepare" ] && [ "$PHASE" = "begin" ]; then
+    if [ -x "$LIB_DIR/isolatecpus.sh" ]; then
+        "$LIB_DIR/isolatecpus.sh" "$VM_NAME" "isolate"
+    fi
+fi
+
 # After VM stops -> remove hugepages
 if [ "$EVENT" = "release" ] && [ "$PHASE" = "end" ]; then
     if [ -x "$LIB_DIR/hugepages.sh" ]; then
         "$LIB_DIR/hugepages.sh" "$VM_NAME" "release"
+    fi
+fi
+
+# After VM stops de-isolate the cpus
+if [ "$EVENT" = "release" ] && [ "$PHASE" = "end" ]; then
+    if [ -x "$LIB_DIR/isolatecpus.sh" ]; then
+        "$LIB_DIR/isolatecpus.sh" "$VM_NAME" "deisolate"
     fi
 fi

@@ -8,6 +8,11 @@ if [ -z "$VM_NAME" ]; then
   exit 1
 fi
 
+if [ -z "$ACTION" ]; then
+  echo "No Action"
+  exit 1
+fi
+
 # Number of 2MiB hugepages to use (same for all VMs with this script)
 HUGEPAGE_SIZE_KB=$(grep Hugepagesize /proc/meminfo | awk '{print $2}')
 
