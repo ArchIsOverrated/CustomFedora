@@ -1,0 +1,43 @@
+#!/bin/bash
+
+HOOKS_DIR=$(dirname "$0")
+
+VM_NAME="$1"    # domain name
+EVENT="$2"      # start, stopped, etc.
+PHASE="$3"      # begin, end, etc.
+
+VM_DIR="$HOOKS_DIR/qemu.d/$VM_NAME"
+LIB_DIR="$HOOKS_DIR/lib"
+
+# If there is no per-VM directory, do nothing
+if [ ! -d "$VM_DIR" ]; then
+    exit 0
+fi
+
+# Before VM starts -> allocate hugepages
+if [ "$EVENT" = "prepare" ] && [ "$PHASE" = "begin" ]; then
+    if [ -x "$LIB_DIR/hugepages.sh" ]; then
+        "$LIB_DIR/hugepages.sh" "$VM_NAME" "allocate"
+    fi
+fi
+
+#Before VM starts isolate the cpus
+if [ "$EVENT" = "prepare" ] && [ "$PHASE" = "begin" ]; then
+    if [ -x "$LIB_DIR/isolatecpus.sh" ]; then
+        "$LIB_DIR/isolatecpus.sh" "$VM_NAME" "isolate"
+    fi
+fi
+
+# After VM stops -> remove hugepages
+if [ "$EVENT" = "release" ] && [ "$PHASE" = "end" ]; then
+    if [ -x "$LIB_DIR/hugepages.sh" ]; then
+        "$LIB_DIR/hugepages.sh" "$VM_NAME" "release"
+    fi
+fi
+
+# After VM stops de-isolate the cpus
+if [ "$EVENT" = "release" ] && [ "$PHASE" = "end" ]; then
+    if [ -x "$LIB_DIR/isolatecpus.sh" ]; then
+        "$LIB_DIR/isolatecpus.sh" "$VM_NAME" "deisolate"
+    fi
+fi

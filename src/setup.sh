@@ -75,6 +75,10 @@ setup_virtualization_tools() {
 
   dnf group install --with-optional "virtualization" -y
 
+  dnf install tuned -y
+  systemctl enable --now tuned
+  tuned-adm profile virtual-host
+
   echo "Virtualization tools installed successfully."
 
   systemctl enable --now libvirtd
@@ -112,6 +116,9 @@ setup_desktop_environment() {
   curl \
   sddm -y
 
+  sed -i '/^installonly_limit=/d' /etc/dnf/dnf.conf
+  echo "installonly_limit=2" >> /etc/dnf/dnf.conf
+
   systemctl enable sddm
   systemctl enable NetworkManager
 
@@ -121,12 +128,11 @@ setup_desktop_environment() {
     mkdir -p "/home/$TARGET_USER/.themes"
   fi
 
-  cp -rf ./.themes/Gruvbox-B-MB-Dark "/home/$TARGET_USER/.themes/"
+  cp -rf ../.themes/Gruvbox-B-MB-Dark "/home/$TARGET_USER/.themes/"
 
-  cp ./.gtkrc-2.0 "/home/$TARGET_USER/"
+  cp ../.gtkrc-2.0 "/home/$TARGET_USER/"
 
-  cp -rf ./.config "/home/$TARGET_USER/.config"
-
+  cp -rf ../.config "/home/$TARGET_USER/.config"
   chown -R "$TARGET_USER:$TARGET_USER" "/home/$TARGET_USER/.themes"
   chown -R "$TARGET_USER:$TARGET_USER" "/home/$TARGET_USER/.config"
   chown "$TARGET_USER:$TARGET_USER" "/home/$TARGET_USER/.gtkrc-2.0"
