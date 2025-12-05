@@ -5,8 +5,13 @@ trap 'echo "Error on line $LINENO while running: $BASH_COMMAND" | tee -a ./isola
 VM_NAME="$1"
 ACTION="$2"
 
-if [ -z "$VM_NAME" ] || [ -z "$ACTION" ]; then
-  echo "Usage: $0 <vm_name> <isolate|deisolate>"
+if [ -z "$VM_NAME" ]; then
+  echo "No VM Name"
+  exit 1
+fi
+
+if [ -z "$ACTION" ]; then
+  echo "No Action"
   exit 1
 fi
 
