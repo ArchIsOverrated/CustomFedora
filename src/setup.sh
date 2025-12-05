@@ -75,7 +75,7 @@ setup_virtualization_tools() {
 
   dnf group install --with-optional "virtualization" -y
 
-  dnf install tuned
+  dnf install tuned -y
   systemctl enable --now tuned
   tuned-adm profile virtual-host
 
@@ -115,6 +115,9 @@ setup_desktop_environment() {
   firefox \
   curl \
   sddm -y
+
+  sed -i '/^installonly_limit=/d' /etc/dnf/dnf.conf
+  echo "installonly_limit=2" >> /etc/dnf/dnf.conf
 
   systemctl enable sddm
   systemctl enable NetworkManager
