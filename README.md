@@ -11,7 +11,7 @@ script does and how to run them safely.
 - **Location:** repository root contains the main scripts referenced below.
 
 **Files**
-- **`configurevm.sh`**: Will give you options to configure your virtual machines. So far it sets up the libvirt hooks for the virtual machines. It configures HUGEPAGES and CPU isolation but you must have CPU pinning and have the huge pages tag in your xml config fo this to work. Future plans are to have this script also setup the xml for you, but for now you have to do that manually
+- **`configurevm.sh`**: Will give you options to configure your virtual machines. So far it sets up the libvirt hooks for the virtual machines. It configures HUGEPAGES and CPU isolation but you must have CPU pinning and have the huge pages tag in your xml config fo this to work. There is some limited functionality for this script editing the virtual machine XML for you such as adding the huge pages and a guided setup for cpu pinning.
 - **`createvm.sh`**: helper to create and configure a VM (see script header
 	for usage). Behavior depends on your system configuration.
 - **`gpu_passthrough.sh`**: configures VFIO for GPU passthrough and updates
