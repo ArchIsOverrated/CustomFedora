@@ -1,20 +1,53 @@
+#!/usr/bin/env python3
+import sys
 import xml.etree.ElementTree as ET
 
-SOURCE_VM="Windows10VMTutorialBackup.xml"
-TARGET_VM="Windows10PerformanceVM.xml"
+if len(sys.argv) != 3:
+    print("Usage: configure_xml.py <xml-path> <cpu-list>")
+    sys.exit(1)
 
-tree = ET.parse(TARGET_VM)
+xml_path = sys.argv[1]
+cpu_list_str = sys.argv[2]
+
+cpus = [c.strip() for c in cpu_list_str.split(",") if c.strip()]
+
+tree = ET.parse(xml_path)
 root = tree.getroot()
 
-memory_backing = root.find("memoryBacking")
-if memory_backing is None:
-    memory_backing = ET.SubElement(root, "memoryBacking")
-    ET.SubElement(memory_backing, "hugepages")
-elif memory_backing is not None:
-    print("It's here!")
+# -----------------------------
+# Add <memoryBacking><hugepages/>
+# -----------------------------
+mb = root.find("memoryBacking")
+if mb is None:
+    mb = ET.SubElement(root, "memoryBacking")
 
-cpu_tune = root.find("cputune")
-if cpu_tune is None:
-    cpu_tune = ET.SubElement(root,"cputune")
+# Remove existing children if any
+for child in mb.findall("*"):
+    mb.remove(child)
 
-tree.write(SOURCE_VM)
+ET.SubElement(mb, "hugepages")
+
+# -----------------------------
+# CPU pinning
+# -----------------------------
+cputune = root.find("cputune")
+if cputune is None:
+    cputune = ET.SubElement(root, "cputune")
+
+# Remove previous pins
+for pin in list(cputune.findall("vcpupin")):
+    cputune.remove(pin)
+
+vcpu_elem = root.find("vcpu")
+if vcpu_elem is None or not vcpu_elem.text:
+    print("Error: no <vcpu> element found")
+    sys.exit(1)
+
+num_vcpus = int(vcpu_elem.text)
+
+# Only pin what the user gave
+for v in range(min(num_vcpus, len(cpus))):
+    ET.SubElement(cputune, "vcpupin",
+                  {"vcpu": str(v), "cpuset": cpus[v]})
+
+tree.write(xml_path)
