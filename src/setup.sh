@@ -114,6 +114,7 @@ setup_desktop_environment() {
   nm-connection-editor \
   firefox \
   curl \
+  python \
   sddm -y
 
   sed -i '/^installonly_limit=/d' /etc/dnf/dnf.conf
