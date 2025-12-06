@@ -87,6 +87,9 @@ configure_xml() {
   read -rp "Enter comma-separated host CPU IDs to pin to (example: 2,3,4,5): " CPU_LIST
 
   echo "Applying hugepages + CPU pinning to XML..."
+  echo "DEBUG: XML_PATH='$XML_PATH'"
+  echo "DEBUG: CPU_LIST='$CPU_LIST'"
+
   python3 configure_xml.py "$XML_PATH" "$CPU_LIST"
 
   echo "XML updated successfully."
