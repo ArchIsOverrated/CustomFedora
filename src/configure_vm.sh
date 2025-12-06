@@ -92,6 +92,7 @@ configure_xml() {
 
   python3 configure_xml.py "$XML_PATH" "$CPU_LIST"
 
+  virsh define "$XML_PATH"
   echo "XML updated successfully."
 }
 
