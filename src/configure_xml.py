@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import xml.etree.ElementTree as ET
+import hashlib
 
 if len(sys.argv) != 4:
     print("Usage: configure_xml.py <xml-path> <cpu-list> <emulator-cpu-list>")
@@ -12,7 +13,9 @@ emulator_list = sys.argv[3]
 
 cpus = [c.strip() for c in cpu_list_str.split(",") if c.strip()]
 
+print("is it here")
 tree = ET.parse(xml_path)
+print("or here")
 root = tree.getroot()
 
 # -----------------------------
@@ -41,6 +44,10 @@ def cpu_pinning():
     for pin in list(cputune.findall("vcpupin")):
         cputune.remove(pin)
 
+    # Remove previous emulator pins
+    for pin in list(cputune.findall("emulatorpin")):
+        cputune.remove(pin)
+
     vcpu_elem = root.find("vcpu")
 
     if vcpu_elem is None or not vcpu_elem.text:
@@ -54,7 +61,75 @@ def cpu_pinning():
         ET.SubElement(cputune, "vcpupin", {"vcpu": str(v), "cpuset": cpus[v]})
     ET.SubElement(cputune, "emulatorpin", {"cpuset": emulator_list})
 
-huge_pages()
+# -----------------------------
+# NVME emulation
+# -----------------------------
+def nvme_emulation():
+    # Find <devices>
+    devices = root.find("devices")
+    if devices is None:
+        print("Error: no <devices> element found")
+        sys.exit(1)
+
+    # Remove existing NVMe controllers (so we can re-add cleanly every run)
+    for ctrl in list(devices.findall("controller")):
+        if ctrl.get("type") == "nvme":
+            devices.remove(ctrl)
+
+    # Add NVMe controller (your libvirt expects it)
+    ET.SubElement(devices, "controller", {"type": "nvme", "index": "0"})
+
+    # Find the first real disk in the VM (usually the boot disk)
+    disk = None
+    for d in devices.findall("disk"):
+        if d.get("device") == "disk":
+            disk = d
+            break
+
+    if disk is None:
+        print("Error: no <disk device='disk'> found")
+        sys.exit(1)
+
+    # Ensure <driver> exists and set performance-friendly options
+    driver = disk.find("driver")
+    if driver is None:
+        driver = ET.SubElement(disk, "driver")
+
+    driver.set("name", "qemu")
+    driver.set("type", "qcow2")
+    driver.set("cache", "none")
+    driver.set("io", "native")
+    driver.set("discard", "unmap")
+
+    # Ensure <target> exists and set NVMe target
+    target = disk.find("target")
+    if target is None:
+        target = ET.SubElement(disk, "target")
+
+    target.set("dev", "nvme0n1")
+    target.set("bus", "nvme")
+
+    # Remove drive-style address (SATA/SCSI) if present; NVMe is PCIe
+    for addr in list(disk.findall("address")):
+        if addr.get("type") == "drive":
+            disk.remove(addr)
+
+    # Create/update <serial> (libvirt requires serial for NVMe)
+    uuid_elem = root.find("uuid")
+    if uuid_elem is None or uuid_elem.text is None or uuid_elem.text.strip() == "":
+        print("Error: no <uuid> found (virt-install normally creates this)")
+        sys.exit(1)
+
+    vm_uuid = uuid_elem.text.strip()
+    digest = hashlib.sha256(vm_uuid.encode("utf-8")).hexdigest()
+    serial_value = "S5G" + digest[0:17]  # 20 chars total
+
+    serial_elem = disk.find("serial")
+    if serial_elem is None:
+        serial_elem = ET.SubElement(disk, "serial")
+    serial_elem.text = serial_value
+
 cpu_pinning()
+nvme_emulation()
 
 tree.write(xml_path)
