@@ -95,7 +95,7 @@ configure_xml() {
   echo "DEBUG: CPU_LIST='$CPU_LIST'"
   echo "DEBUG: EMULATOR_LIST=$EMULATOR_LIST'"
 
-  python3 configure_xml.py "$XML_PATH" "$CPU_LIST" "$EMULATOR_LIST"
+  python3 configure_xml.py "$XML_PATH" "$CPU_LIST" "$EMULATOR_LIST" "$CPU_VENDOR"
 
   virsh define "$XML_PATH"
   echo "XML updated successfully."

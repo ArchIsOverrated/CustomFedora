@@ -3,19 +3,19 @@ import sys
 import xml.etree.ElementTree as ET
 import hashlib
 
-if len(sys.argv) != 4:
-    print("Usage: configure_xml.py <xml-path> <cpu-list> <emulator-cpu-list>")
+if len(sys.argv) != 5:
+    print("Usage: configure_xml.py <xml-path> <cpu-list> <emulator-cpu-list> <cpu-vendor>")
     sys.exit(1)
 
 xml_path = sys.argv[1]
 cpu_list_str = sys.argv[2]
 emulator_list = sys.argv[3]
+cpu_vendor = sys.argv[4]
 
 cpus = [c.strip() for c in cpu_list_str.split(",") if c.strip()]
+print(cpus)
 
-print("is it here")
 tree = ET.parse(xml_path)
-print("or here")
 root = tree.getroot()
 
 # -----------------------------
@@ -31,6 +31,44 @@ def huge_pages():
         memoryBacking.remove(child)
 
     ET.SubElement(memoryBacking, "hugepages")
+
+# -----------------------------
+# CPU layout
+# -----------------------------
+def cpu_layout():
+    cpu = root.find("cpu")
+    if cpu is None:
+        print("Error: your xml is broken there is no cpu defined!")
+        sys.exit(1)
+
+    # Remove existing topology (idempotent)
+    for topo in cpu.findall("topology"):
+        cpu.remove(topo)
+
+    # Remove existing topoext feature (idempotent)
+    for feat in cpu.findall("feature"):
+        if feat.get("name") == "topoext":
+            cpu.remove(feat)
+
+    # Calculate topology
+    total_vcpus = len(cpus)
+    threads = 2
+    cores = total_vcpus // threads
+
+    topology = ET.SubElement(cpu, "topology", {
+        "sockets": "1",
+        "dies": "1",
+        "clusters": "1",
+        "cores": str(cores),
+        "threads": str(threads),
+    })
+
+    # AMD-only topoext
+    if cpu_vendor.lower() == "amd":
+        ET.SubElement(cpu, "feature", {
+            "policy": "require",
+            "name": "topoext"
+        })
 
 # -----------------------------
 # CPU pinning
@@ -129,6 +167,7 @@ def nvme_emulation():
         serial_elem = ET.SubElement(disk, "serial")
     serial_elem.text = serial_value
 
+cpu_layout()
 cpu_pinning()
 nvme_emulation()
 
