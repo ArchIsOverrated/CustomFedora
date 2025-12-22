@@ -3,14 +3,18 @@ import sys
 import xml.etree.ElementTree as ET
 import hashlib
 
-if len(sys.argv) != 5:
-    print("Usage: configure_xml.py <xml-path> <cpu-list> <emulator-cpu-list> <cpu-vendor>")
+if len(sys.argv) != 6:
+    print("Usage: configure_xml.py <xml-path> <cpu-list> <emulator-cpu-list> <cpu-vendor> <preset>")
     sys.exit(1)
 
 xml_path = sys.argv[1]
 cpu_list_str = sys.argv[2]
 emulator_list = sys.argv[3]
 cpu_vendor = sys.argv[4]
+preset = sys.argv[5]
+
+preset_options = ["performance","performance_transparent"]
+virtual_machine_preset = preset_options[int(preset)-1]
 
 cpus = [c.strip() for c in cpu_list_str.split(",") if c.strip()]
 print(cpus)
@@ -69,6 +73,8 @@ def cpu_layout():
             "policy": "require",
             "name": "topoext"
         })
+    
+
 
 # -----------------------------
 # CPU pinning
@@ -167,8 +173,86 @@ def nvme_emulation():
         serial_elem = ET.SubElement(disk, "serial")
     serial_elem.text = serial_value
 
+def looking_glass():
+    # SPICE audio (top-level, idempotent)
+    for audio in root.findall("audio"):
+        if audio.get("type") == "spice":
+            root.remove(audio)
+
+    ET.SubElement(root, "audio", {
+        "id": "1",
+        "type": "spice"
+    })
+
+    # Looking Glass ivshmem (must be under <devices>)
+    devices = root.find("devices")
+    if devices is None:
+        print("Error: no <devices> section found in XML")
+        sys.exit(1)
+
+    # Remove existing LG shmem
+    for shmem in devices.findall("shmem"):
+        if shmem.get("name") == "looking-glass":
+            devices.remove(shmem)
+
+    shmem = ET.SubElement(devices, "shmem", {
+        "name": "looking-glass"
+    })
+
+    ET.SubElement(shmem, "model", {
+        "type": "ivshmem-plain"
+    })
+
+    size = ET.SubElement(shmem, "size", {
+        "unit": "M"
+    })
+    size.text = "128"
+
+def transparency_optimization():
+    #CPU: disable hypervisor bit
+    cpu = root.find("cpu")
+    if cpu is None:
+        print("Error: no <cpu> element found")
+        sys.exit(1)
+
+    # check if hypervisor feature already exists
+    feature_exists = False
+    for feature in cpu.findall("feature"):
+        if feature.get("name") == "hypervisor":
+            feature.set("policy", "disable")
+            feature_exists = True
+
+    # add it if it does not exist
+    if not feature_exists:
+        ET.SubElement(cpu, "feature", {
+            "policy": "disable",
+            "name": "hypervisor"
+        })
+
+    #find features tag
+    features = root.find("features")
+    if features is None:
+        print("Error: no <features> element found")
+        sys.exit(1)
+
+    # KVM: hide kvm
+    kvm = features.find("kvm")
+    if kvm is None:
+        print("this is none")
+        kvm = ET.SubElement(features, "kvm")
+
+    hidden = kvm.find("hidden")
+    if hidden is None:
+        hidden = ET.SubElement(kvm, "hidden")
+
+    hidden.set("state", "on")
+
+huge_pages()
 cpu_layout()
 cpu_pinning()
 nvme_emulation()
+if virtual_machine_preset == "performance_transparent":
+    transparency_optimization()
+looking_glass()
 
 tree.write(xml_path)

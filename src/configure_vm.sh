@@ -90,12 +90,19 @@ configure_xml() {
   echo "Usually 2 threads is enough, 4 if you have many usb devices passed in"
   read -rp "Enter comma-separated for emulator CPU IDs to pin to (example: 1,13): " EMULATOR_LIST
 
+  echo "There are multiple presets you can choose for your virtual machine."
+  echo "1) Performance: Tuned VM with hooks, cpu isolation and huge pages."
+  echo "2) Performance Transparent: This preset comes with enhanced VM transparency capabilities without sacrificing the convenience of looking glass."
+  read -rp "Enter your preset here as a number: " PRESET
+
   echo "Applying hugepages + CPU pinning to XML..."
   echo "DEBUG: XML_PATH='$XML_PATH'"
   echo "DEBUG: CPU_LIST='$CPU_LIST'"
-  echo "DEBUG: EMULATOR_LIST=$EMULATOR_LIST'"
+  echo "DEBUG: EMULATOR_LIST='$EMULATOR_LIST'"
+  echo "DEBUG: CPU_VENDOR='$CPU_VENDOR'"
+  echo "DEBUG: PRESET='$PRESET'"
 
-  python3 configure_xml.py "$XML_PATH" "$CPU_LIST" "$EMULATOR_LIST" "$CPU_VENDOR"
+  python3 configure_xml.py "$XML_PATH" "$CPU_LIST" "$EMULATOR_LIST" "$CPU_VENDOR" "$PRESET"
 
   virsh define "$XML_PATH"
   echo "XML updated successfully."
