@@ -1,0 +1,1 @@
+../configure --target-list=x86_64-softmmu --datadir=/usr/share --firmwarepath=/usr/share/qemu:/usr/share/edk2/ovmf:/usr/share/seabios:/usr/share/ipxe/qemu:/usr/share/seavgabios
