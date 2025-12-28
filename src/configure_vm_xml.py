@@ -307,6 +307,19 @@ def looking_glass():
     })
     size.text = "128"
 
+def other_performance_optimizations():
+    #find features tag
+    features = root.find("features")
+    if features is None:
+        print("Error: no <features> element found")
+        sys.exit(1)
+
+    # sets interrupts to be handled by kvm instead of by qemu
+    ioapic=features.find("ioapic")
+    if ioapic is None:
+        ioapic = ET.SubElement(features, "ioapic")
+    ioapic.set("driver","kvm")
+
 def transparency_optimization():
     #CPU: disable hypervisor bit
     cpu = root.find("cpu")
@@ -379,6 +392,7 @@ huge_pages()
 cpu_layout()
 cpu_pinning()
 nvme_emulation()
+other_performance_optimizations()
 #scsi()
 if virtual_machine_preset == "performance_transparent":
     transparency_optimization()

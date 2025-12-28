@@ -115,6 +115,7 @@ setup_desktop_environment() {
   firefox \
   curl \
   python \
+  blueman \
   sddm -y
 
   sed -i '/^installonly_limit=/d' /etc/dnf/dnf.conf
