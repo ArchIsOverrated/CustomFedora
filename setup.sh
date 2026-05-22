@@ -14,7 +14,7 @@ DISTRO="unknown"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="/usr/local/lib/VMTUNE"
 POLKIT_DIR="/usr/share/polkit-1"
-BATTERY_FILE="/var/lib/libvirt/images/fakebattery.dsl"
+BATTERY_FILE="/var/lib/libvirt/images/fakebattery.aml"
 
 INSTALL_DIR="/usr/local/bin/"
 
@@ -99,6 +99,7 @@ setup_virtualization_tools() {
   echo "Starting installation of virtualization tools..."
 
   dnf group install --with-optional "virtualization" -y
+  dnf install python3-pip -y
 
   echo "Virtualization tools installed successfully."
 
@@ -213,7 +214,7 @@ setup_desktop_environment() {
 
 update_system
 setup_virtualization_tools
-setup_looking_glass
+#setup_looking_glass
 setup_gaming_laptop
 setup_VMTUNE
 

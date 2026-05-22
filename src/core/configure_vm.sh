@@ -7,7 +7,6 @@ trap 'echo "Error on line $LINENO while running: $BASH_COMMAND" | tee -a ./confi
 # Globals
 ########################################
 
-LIB_DIR=""
 QUERY_MODE=""
 ACTION_MODE=""
 
@@ -17,9 +16,10 @@ EMULATOR_LIST=""
 PRESET=""
 IS_LAPTOP=0
 
+LIB_DIR="/usr/local/lib/VMTUNE"
 HOOKS_DIR="/etc/libvirt/hooks"
 QEMU_HOOKS_DIR="$HOOKS_DIR/qemu.d"
-BATTERY_FILE="/var/lib/libvirt/images/fakebattery.dsl"
+BATTERY_FILE="/var/lib/libvirt/images/fakebattery.aml"
 
 ########################################
 # Argument Parsing
